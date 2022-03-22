@@ -3,7 +3,7 @@ import logging.handlers
 '''
 日志模块
 '''
-LOG_FILENAME = 'meituan.log'
+LOG_FILENAME = 'caifudao.log'
 logger = logging.getLogger()
 
 

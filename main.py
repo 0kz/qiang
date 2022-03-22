@@ -1,4 +1,6 @@
 # -*- coding: UTF-8 -*-
+from cfd100 import Caifudao
+from zh import zh
 from meituan import Meituan
 
 if __name__ == '__main__':
@@ -12,8 +14,10 @@ if __name__ == '__main__':
 ╚═╝     ╚═╝╚══════╝╚═╝╚══════╝╚═╝    ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝
 """
     print(a)
-
-    meituan = Meituan()
-    meituan.coupons()
+    # meituan = Meituan()
+    # meituan.coupons()
+    # caifu= zh()
+    caifu = Caifudao()
+    caifu.coupons()
 
 

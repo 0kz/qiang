@@ -5,6 +5,7 @@ import requests
 import json
 
 from datetime import datetime
+from ping3 import ping
 
 
 from meituan_logger import logger
@@ -12,7 +13,7 @@ from config import global_config
 
 
 class CouponsTimer(object):
-    def __init__(self, sleep_interval=0.5):
+    def __init__(self, sleep_interval=0.1):
         # '2018-09-28 22:45:50.000'
         # buy_time = 2020-12-22 09:59:59.500
         buy_time_everyday = global_config.getRaw('config', 'coupons_time').__str__()
@@ -28,17 +29,40 @@ class CouponsTimer(object):
 
     def meituan_time(self):
         """
-        从美团服务器获取时间毫秒
+        从京东服务器获取时间毫秒
         :return:
         """
-        url = 'https://catfront.dianping.com/batch?v=1&sdk=1.9.5&pageId=owl-b197744d-d914-0786-79a1-b2fc-1630146858328'
+        url = 'https://api.m.jd.com/client.action?functionId=queryMaterialProducts&client=wh5&mobile=2'
         ret = requests.get(url).text
 
-        return int(ret[6:19])
+        return int(json.loads(ret)["currentTime2"])
+    # def meituan_time(self):
+    #     """
+    #     从美团服务器获取时间毫秒
+    #     :return:
+    #     """
+    #     url = 'https://catfront.dianping.com/batch?v=1&sdk=1.9.5&pageId=owl-b197744d-d914-0786-79a1-b2fc-1630146858328'
+    #     ret = requests.get(url).text
+    #
+    #     return int(ret[6:19])
 
     def local_time(self):
 
         return int(round(time.time() * 1000))
+
+    # def ping_host(self):
+    #     """
+    #     获取节点的延迟的作用
+    #     :param node:
+    #     :return:
+    #     """
+    #     ip_address = "api.m.jd.com"
+    #     response = ping(ip_address)
+    #     if response is not None:
+    #         self.delay = int(response * 1000)
+    #         print(self.delay, "网络延迟")
+    #         return self.delay
+
 
     def local_jd_time_diff(self):
         """
@@ -50,13 +74,17 @@ class CouponsTimer(object):
         print('购买时间', self.buy_time_ms)
         return self.local_time() - self.meituan_time()
 
+
+
     def start(self):
+
         logger.info('正在等待到达设定时间:{}，检测本地时间与美团服务器时间误差为【{}】毫秒'.format(self.buy_time, self.diff_time))
         while True:
             # 本地时间减去与美团的时间差，能够将时间误差提升到0.1秒附近
             # 具体精度依赖获取美团服务器时间的网络时间损耗
             if self.local_time() - self.diff_time >= self.buy_time_ms:
                 logger.info('时间到达，开始执行……')
+                self.buy_time_ms = self.buy_time_ms + 3600000
                 break
             else:
                 time.sleep(self.sleep_interval)
